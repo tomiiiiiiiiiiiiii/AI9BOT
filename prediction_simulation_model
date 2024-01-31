@@ -1,0 +1,20 @@
+key="YOUR_API_KEY"
+secret="YOUR_API_SECRET"
+host="https://ai9bot.com"
+prefix="/api"
+method="POST"
+url="/prediction_simulation_model"
+query_param=""
+body_param='{"market":"BTC_USD","interval":"1d","depth":"32"}'
+timestamp=$(date +%s)
+body_hash=$(printf "$body_param" | openssl sha512 | awk '{print $NF}')
+sign_string="$method\n$prefix$url\n$query_param\n$body_hash\n$timestamp"
+sign=$(printf "$sign_string" | openssl sha512 -hmac "$secret" | awk '{print $NF}')
+full_url="$host$prefix$url"
+curl -X $method $full_url -d "$body_param" -H "Content-Type: application/json" \
+    -H "Timestamp: $timestamp" -H "KEY: $key" -H "SIGN: $sign"
+
+# The response is the probability coefficient for purchase
+# 1.00 = Strong buy signal 
+# 0.00 = Strong sell signal
+# The bot's sample response is a floating-point number: {"r":"0.64"}
